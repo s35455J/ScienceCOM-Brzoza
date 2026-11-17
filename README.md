@@ -36,8 +36,10 @@ maintained by PJATK AI.
 
 The backend creates player sessions over WebSocket, validates hand samples,
 stores game results and serves an ordered ranking over REST. The
-frontend workspace contains a Vue application scaffold, a MediaPipe hand tracker
-and its Vue wrapper. The web application displays an interactive counter.
+frontend workspace contains the Vue game, a MediaPipe hand tracker and its Vue
+wrapper. In the game, the player spells a random five-letter word in Polish Sign
+Language (PJM) by showing each letter inside a zone on the camera image before
+the time runs out.
 
 | Component | Technologies |
 | --- | --- |
@@ -84,6 +86,39 @@ pnpm dev
 Open the local URL printed by Vite.
 
 ## Usage
+
+### Play the game
+
+1. Enter a nickname (1–20 characters) and choose the hand you sign with.
+2. Allow camera access. The view is mirrored by default; the **Lustro** button
+   turns mirroring on or off (the choice is remembered in the browser).
+3. Put the whole hand inside the zone. Show each letter of the word and hold it
+   until the progress ring fills. You have 60 seconds for five letters.
+4. Each letter gives 100 points. A complete word adds 10 points for each full
+   second left.
+
+Words use only the 16 letters that the PJM classifier in `model/` recognizes:
+`A B C E I L M N O P R S T U W Y`, without Polish diacritics.
+
+The game creates a WebSocket session on start and streams `hand_sample` and
+`no_hand` messages (about 15 per second) during each round. When the backend is
+not reachable, the game runs offline. It reads the top 10 from `/api/ranking`.
+
+> **Test recognition mode.** The browser does not run the letter classifier yet.
+> Until it is connected, hold the key of the letter on the keyboard while you
+> show the sign in the zone. Recognizers implement `LetterRecognizer` in
+> `frontend/apps/web/src/recognition/`.
+
+The frontend reads these optional variables from `frontend/apps/web/.env.local`:
+
+| Variable | Default |
+| --- | --- |
+| `VITE_BACKEND_URL` | `http://127.0.0.1:8080` |
+| `VITE_WEBSOCKET_URL` | `VITE_BACKEND_URL` with `ws` scheme and `/ws` path |
+| `VITE_HAND_LANDMARKER_MODEL_URL` | MediaPipe `hand_landmarker.task` (float16) from Google storage |
+
+The MediaPipe WASM files come from `@mediapipe/tasks-vision`; Vite serves them
+at `/mediapipe/wasm/` and copies them into the build.
 
 ### Open a WebSocket session
 
@@ -133,7 +168,7 @@ saved results.
 | Path | Contents |
 | --- | --- |
 | `backend/` | Spring Boot application, WebSocket sessions, ranking API and SQLite storage |
-| `frontend/apps/web/` | Vue application scaffold |
+| `frontend/apps/web/` | Vue game: camera, hand zone, word spelling, WebSocket client and ranking |
 | `frontend/packages/hand-landmarker/` | MediaPipe tracker API and hand selection |
 | `frontend/packages/hand-landmarker-vue/` | Vue composable for the hand tracker |
 | `docs/` | API reference, backend architecture and project workflow |
