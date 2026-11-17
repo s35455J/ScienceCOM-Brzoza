@@ -23,7 +23,7 @@ function exit(error?: string): void {
     <div class="app">
         <header class="app__header">
             <span class="app__logo" aria-hidden="true">🤟</span>
-            <span class="app__name">SLLAPP</span>
+            <span class="app__name">PJATK{AI}</span>
             <span class="app__tagline">Nauka polskiego alfabetu palcowego</span>
         </header>
         <main class="app__main">
